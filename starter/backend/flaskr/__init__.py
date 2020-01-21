@@ -16,16 +16,27 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
+  @app.after_request
+  def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+    return response
 
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories')
+  def get_categories():
+    categories = Category.query.all()
+    formatted_categories = [category.format() for category in categories]
+    return formatted_categories #jsonify({'Categories': formatted_categories})
 
 
   '''
@@ -40,6 +51,22 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  @app.route('/questions')
+  def get_questions():
+    page = request.args.get('page',1,type=int)
+    start = (page - 1) * 10
+    end = start + 10
+    questions = Question.query.all()
+    formatted_questions = [question.format() for question in questions]
+    current_category = 2
+    categories = get_categories()
+
+    return jsonify({
+      'questions':formatted_questions[start:end],
+      'total_questions':len(formatted_questions),
+      'current_category':current_category,
+      'categories':categories
+      })
 
   '''
   @TODO: 
@@ -48,7 +75,10 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
-
+  @app.route('/questions', methods=['DELETE'])
+  def delete_question():
+    q_id = request.args.get('q_id')
+    return jsonify({'status':'Deleted question {}!'.format(q_id)})
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
@@ -59,6 +89,19 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def post_question():
+    body = request.get_json()
+    question = body.get('question')
+    answer = body.get('answer')
+    category = body.get('category')
+    difficulty = body.get('difficulty')
+    return jsonify({
+      'question':question,
+      'answer':answer,
+      'category':category,
+      'difficulty':difficulty
+    })
 
   '''
   @TODO: 
@@ -70,6 +113,13 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/search', methods=['POST'])
+  def search_question():
+    term = request.args.get('term')
+    return jsonify({
+      'term':'Your search term was {}'.format(term)
+    })
+
 
   '''
   @TODO: 
@@ -79,6 +129,13 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/question')
+  def q_bycategory():
+    question = 'tobe or not to be'
+    category = request.args.get('category')
+    return jsonify({
+      'message':'Question - {} is in category {}'.format(question,category)
+    })
 
 
   '''
@@ -92,12 +149,26 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/play/<int:category>', methods=['POST'])
+  def get_randomq(category):
+    return jsonify({
+      'message':'this is a reandmon question {}'.format(category)
+    })
 
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
-  '''
+  '''  
+  @app.errorhandler(404)
+  def handle_404(error):
+    return jsonify({'message':'method NOT allowed!'})
+  @app.errorhandler(405)
+  def handle_405(error):
+    return jsonify({'message':'method NOT allowed!'})
+  @app.errorhandler(422)
+  def handle_422(error):
+    return jsonify({'message':'method NOT allowed!'})
   
   return app
 
