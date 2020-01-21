@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask import json
 import random
 
 from models import setup_db, Question, Category
@@ -34,9 +35,12 @@ def create_app(test_config=None):
   '''
   @app.route('/categories')
   def get_categories():
-    categories = Category.query.all()
-    formatted_categories = [category.format() for category in categories]
-    return formatted_categories #jsonify({'Categories': formatted_categories})
+    list_categories = Category.query.all()
+    categories = [list_category.format() for list_category in list_categories]
+    return jsonify({
+      'success': True,
+      'categories':categories
+    })
 
 
   '''
@@ -58,15 +62,15 @@ def create_app(test_config=None):
     end = start + 10
     questions = Question.query.all()
     formatted_questions = [question.format() for question in questions]
+    categories = Category.query.all()
     current_category = 2
-    categories = get_categories()
-    response = {
+    return jsonify({
+      'success':True,
       'questions':formatted_questions[start:end],
       'total_questions':int(len(formatted_questions)),
-      'categories':categories,
+      'categories':len(categories),
       'current_category':current_category
-    }
-    return response
+    })
 
   '''
   @TODO: 
@@ -78,6 +82,8 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['DELETE'])
   def delete_question():
     q_id = request.args.get('q_id')
+    to_delete = Question.query.get(q_id)
+    to_delete.delete()    
     return jsonify({'status':'Deleted question {}!'.format(q_id)})
   '''
   @TODO: 
@@ -94,15 +100,18 @@ def create_app(test_config=None):
     body = request.get_json()
     question = body.get('question')
     answer = body.get('answer')
-    category = body.get('category')
+    category = int(body.get('category'))
     difficulty = body.get('difficulty')
+    try:
+      new_question = Question(question=question,answer=answer,category=category,difficulty=difficulty)
+      Question.insert(new_question)
+    except:
+      return jsonify({
+        'status':'question post failed!'
+      })
     return jsonify({
-      'question':question,
-      'answer':answer,
-      'category':category,
-      'difficulty':difficulty
+      'status':'Successfully posted to new question'
     })
-
   '''
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
