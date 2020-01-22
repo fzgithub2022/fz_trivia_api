@@ -34,6 +34,7 @@ def create_app(test_config=None):
   '''
   @app.route('/categories')
   def get_categories():
+<<<<<<< HEAD
     categories = Category.query.all()
     formatted_categories = [category.format() for category in categories]
     return jsonify({'categories':formatted_categories})
@@ -44,6 +45,13 @@ def create_app(test_config=None):
     category.insert()
     return jsonify({
       'message':'Inserted {} successfully!'.format(category.type)
+=======
+    list_categories = Category.query.all()
+    categories = [list_category.format() for list_category in list_categories]
+    return jsonify({
+      'success': True,
+      'categories':categories
+>>>>>>> parent of 2565a344... p submission
     })
   '''
   @TODO: 
@@ -81,10 +89,19 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+<<<<<<< HEAD
   @app.route('/del_question', methods=['DELETE'])
   def del_question():
     question_id = request.args.get('qid')
     return jsonify({'message':'DELETED QUESTION {}'.format(question_id)})
+=======
+  @app.route('/questions', methods=['DELETE'])
+  def delete_question():
+    q_id = request.args.get('q_id')
+    to_delete = Question.query.get(q_id)
+    to_delete.delete()    
+    return jsonify({'status':'Deleted question {}!'.format(q_id)})
+>>>>>>> parent of 2565a344... p submission
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
@@ -111,11 +128,22 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+<<<<<<< HEAD
   @app.route('/search_questions', methods=['GET'])
   def search_questions():
     term = request.args.get('term')
     term2 = request.args.get('term2')
     return jsonify({'message':'You searched {} and {}'.format(term,term2)})
+=======
+  @app.route('/search', methods=['POST'])
+  def search_question():
+    term = request.args.get('term')
+    return jsonify({
+      'term':'Your search term was {}'.format(term)
+    })
+
+
+>>>>>>> parent of 2565a344... p submission
   '''
   @TODO: 
   Create a GET endpoint to get questions based on category. 
@@ -124,6 +152,7 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+<<<<<<< HEAD
   @app.route('/questions/<int:q_id>')
   def get_question(q_id):
     question = Question.query.filter(Question.id == q_id).one_or_none()
@@ -131,6 +160,17 @@ def create_app(test_config=None):
       return jsonify({'question':'None question with id {}'.format(q_id)})
     else:
       return jsonify({'question':question.format()})
+=======
+  @app.route('/question')
+  def q_bycategory():
+    question = 'tobe or not to be'
+    category = request.args.get('category')
+    return jsonify({
+      'message':'Question - {} is in category {}'.format(question,category)
+    })
+
+
+>>>>>>> parent of 2565a344... p submission
   '''
   @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
@@ -142,15 +182,25 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+<<<<<<< HEAD
   @app.route('/post_question', methods=['POST'])
   def post_question():
     category = request.args.get('category')
     prev_question = request.args.get('prev')
     return jsonify({'message':'You searched {} and {}'.format(category,prev_question)})
+=======
+  @app.route('/play/<int:category>', methods=['POST'])
+  def get_randomq(category):
+    return jsonify({
+      'message':'this is a reandmon question {}'.format(category)
+    })
+
+>>>>>>> parent of 2565a344... p submission
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
+<<<<<<< HEAD
   '''
   @app.errorhandler(404)
   def not_found(error):
@@ -168,6 +218,18 @@ def create_app(test_config=None):
       'message': 'type and syntax ok but could not process'
     })
 
+=======
+  '''  
+  @app.errorhandler(404)
+  def handle_404(error):
+    return jsonify({'message':'method NOT allowed!'})
+  @app.errorhandler(405)
+  def handle_405(error):
+    return jsonify({'message':'method NOT allowed!'})
+  @app.errorhandler(422)
+  def handle_422(error):
+    return jsonify({'message':'method NOT allowed!'})
+>>>>>>> parent of 2565a344... p submission
   
   return app
 
