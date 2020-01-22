@@ -35,10 +35,11 @@ def create_app(test_config=None):
   '''
   @app.route('/categories')
   def get_categories():
-    list_categories = Category.query.all()
-    categories = [list_category.format() for list_category in list_categories]
+    categories = {}
+    results = Category.query.all()
+    for result in results:
+      categories[result.id] = result.type
     return jsonify({
-      'success': True,
       'categories':categories
     })
 
@@ -79,12 +80,11 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
-  @app.route('/questions', methods=['DELETE'])
-  def delete_question():
-    q_id = request.args.get('q_id')
+  @app.route('/questions/<int:q_id>', methods=['DELETE'])
+  def delete_question(q_id):
     to_delete = Question.query.get(q_id)
     to_delete.delete()    
-    return jsonify({'status':'Deleted question {}!'.format(q_id)})
+    return jsonify({'succes':True})
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
@@ -124,9 +124,17 @@ def create_app(test_config=None):
   '''
   @app.route('/search', methods=['POST'])
   def search_question():
-    term = request.args.get('term')
+    body = request.get_json()
+    searchTerm = body.get('searchTerm')
+    results = Question.query.filter(Question.question.match(searchTerm))
+    questions = [result.format() for result in results]
+    total_questions = int(len(questions))
+    current_category = 1
     return jsonify({
-      'term':'Your search term was {}'.format(term)
+      'success':True,
+      'questions':questions,
+      'total_questions':total_questions,
+      'current_category': current_category
     })
 
 
@@ -138,12 +146,16 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-  @app.route('/question')
-  def q_bycategory():
-    question = 'tobe or not to be'
-    category = request.args.get('category')
+  @app.route('/categories/<int:c_id>/questions')
+  def q_bycategory(c_id):
+    results = Question.query.filter(Question.category == c_id)
+    questions = [result.format() for result in results]
+    total_questions = int(len(questions))
     return jsonify({
-      'message':'Question - {} is in category {}'.format(question,category)
+      'success':True,
+      'questions': questions,
+      'total_questions': total_questions,
+      'current_category': c_id
     })
 
 
@@ -158,26 +170,44 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
-  @app.route('/play/<int:category>', methods=['POST'])
-  def get_randomq(category):
+  @app.route('/quizzes', methods=['POST'])
+  def start_quizzes():
+    body = request.get_json()
+    previousQuestions = body.get('previousQuestions')
+    quiz_category = body.get('quiz_category')
+    category_questions = Question.query.filter(Question.category == quiz_category)
+    available_ids = []
+    for category_question in category_questions:
+      available_ids.append(category_question.id)
+    if not previousQuestions:
+      for previousQuestion in previousQuestions:
+        available_ids.pop()
+    random_number = random.choice(available_ids)
+    result = Question.query.get(random_number)
+    question = result.format()
     return jsonify({
-      'message':'this is a reandmon question {}'.format(category)
-    })
+      'success':True,
+      'previousQuestions':previousQuestions,
+      'question':question
+      })
 
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
-  '''  
+  '''
+  @app.errorhandler(400)
+  def handle_400(error):
+    return jsonify({'message':'Bad Request!'})
   @app.errorhandler(404)
   def handle_404(error):
-    return jsonify({'message':'method NOT allowed!'})
+    return jsonify({'message':'resource not found!'})
   @app.errorhandler(405)
   def handle_405(error):
     return jsonify({'message':'method NOT allowed!'})
   @app.errorhandler(422)
   def handle_422(error):
-    return jsonify({'message':'method NOT allowed!'})
+    return jsonify({'message':'Unprocessable Entity'})
   
   return app
 
