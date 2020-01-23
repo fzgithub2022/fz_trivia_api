@@ -50,13 +50,11 @@ def create_app(test_config=None):
                 categories[result.id] = result.type
             # return categories
             return jsonify({
-                'categories': categories,
-                'success': True
+                'categories': categories
             })
-        except:
+        except BaseException:
             abort(404)
-        
-        
+
     '''
     @TODO:
     Create an endpoint to handle GET requests for questions,
@@ -127,7 +125,7 @@ def create_app(test_config=None):
                 difficulty=difficulty
                 )
             Question.insert(new_question)
-        except:  # if not able to send status
+        except BaseException:  # if not able to send status
             return jsonify({
                 'status': 'question post failed!'
             })
@@ -167,7 +165,7 @@ def create_app(test_config=None):
     '''
     @app.route('/categories/<int:c_id>/questions')
     def q_bycategory(c_id):
-        results = Question.query.filter(Question.category == c_id)
+        # results = Question.query.filter(Question.category == c_id)
         questions = [result.format() for result in results]
         total_questions = int(len(questions))
         return jsonify({
