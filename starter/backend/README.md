@@ -72,20 +72,135 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+DELETE '/questions'
+POST '/questions'
+POST '/search'
+GET '/categories/<int:c_id>/questions
+POST '/quizzes'
+
 
 GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+- Returns: Dictionary with single key
 {'1' : "Science",
 '2' : "Art",
 '3' : "Geography",
 '4' : "History",
 '5' : "Entertainment",
 '6' : "Sports"}
+
+GET '/questions'
+- fetches nested dictionary...
+- Request Arguments: "page" is integer variable expecting a value request argument named 'page' (i.e. /questions?page=2)
+- Returns several objects. 1)dictionary key "questions" contains sub dictionaries. 2)current_cattegory object is a key with integer value for current catgory 3)categories is key with integer value for the number of categories available 4)'success' key is has a boolean value with result of whether or not questions were fetched successfully
+{
+  "categories": 6,
+  "current_category": 2,
+  "questions": [
+    {
+      "answer": "Maya Angelou",
+      "category": 4,
+      "difficulty": 2,
+      "id": 5,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+    },
+    {
+      "answer": "Muhammad Ali",
+      "category": 4,
+      "difficulty": 1,
+      "id": 9,
+      "question": "What boxer's original name is Cassius Clay?"
+    },
+    {
+      "answer": "Apollo 13",
+      "category": 5,
+      "difficulty": 4,
+      "id": 2,
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    },
+    {
+      "answer": "Tom Cruise",
+      "category": 5,
+      "difficulty": 4,
+      "id": 4,
+      "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+    },
+    {
+      "answer": "Edward Scissorhands",
+      "category": 5,
+      "difficulty": 3,
+      "id": 6,
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    },
+    {
+      "answer": "Brazil",
+      "category": 6,
+      "difficulty": 3,
+      "id": 10,
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    },
+    {
+      "answer": "Uruguay",
+      "category": 6,
+      "difficulty": 4,
+      "id": 11,
+      "question": "Which country won the first ever soccer World Cup in 1930?"
+    },
+    {
+      "answer": "George Washington Carver",
+      "category": 4,
+      "difficulty": 2,
+      "id": 12,
+      "question": "Who invented Peanut Butter?"
+    },
+    {
+      "answer": "Lake Victoria",
+      "category": 3,
+      "difficulty": 2,
+      "id": 13,
+      "question": "What is the largest lake in Africa?"
+    },
+    {
+      "answer": "The Palace of Versailles",
+      "category": 3,
+      "difficulty": 3,
+      "id": 14,
+      "question": "In which royal palace would you find the Hall of Mirrors?"
+    }
+  ],
+  "success": true,
+  "total_questions": 21
+}
+
+
+DELETE '/questions'
+- Deletes a quetion from the the questions table
+- Request Arguments: 'id' integer matching question id
+- Returns: 'status' string with either successful or failed submission
+
+POST '/questions'
+- Inserts a new question into the questions table
+- Request Arguments: 'question' is string with the question, 'answer' is string with the answer, 'category' is integer for category joined field, 'difficulty' is integer. These are received through "Content-Type: application/json" header values
+- Returns: 'status' string with either successful or failed submission
+
+
+POST /search
+- Fetches questions/objects based on a searchterm/substring
+- Posted Arguments: 'searchTerm' is a string obtains from web form through "Content-Type: application/json" header
+- Returns several objects. 1)dictionary key "questions" contains sub dictionaries with questions with substrings matchign search term. 2)current_cattegory object is a key with integer value for current catgory 3)total questions is integer with number of questions resulted from the search term 4)'success' key is has a boolean value with result of whether or not questions were fetched successfuly 
+
+GET /cateories/<int:c_id>/questions'
+- Returns questions matching category ID
+- Request arguments: Category ID is Integer exatracted from endpoint
+- Returns several objects. 1)dictionary key "questions" contains sub dictionaries with questions matching category ID 2)current_cattegory object is a key with integer value for current catgory 3)total questions is integer with number of questions matching category ID 4)'success' key is has a boolean value with result of whether or not questions were fetched successfuly
+
+
+GET /quizzes
+- Returns a random question. First it gets json arguments previous question and quiz category. Then It looks for questions available on that category in the database. Then it removes makes a list of the IDs of the questions and removes any IDs that have already been used in previous questions. From that list of question that it randomly pick ones and returns it.
+-Request Arguments: Previous Questions is json containing list of previous questions, and category ID is current category.
+- Returns 1) Previous questions to keep avoid repeating and figure out when quizzed has ended 2)The question needed for the quiz and 3)Success boolean confirming question was fetched
 
 ```
 
